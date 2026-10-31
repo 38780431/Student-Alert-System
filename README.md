@@ -1,6 +1,7 @@
  Student Alert System
 
 Project Description
+
 The Student Alert System is a web-based application designed to facilitate student information management and communication through alerts and notifications. It provides an organized platform for students, lecturers, and administrators.
 
 Technologies Used
