@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Student Portal</title>
+    <link rel="stylesheet" href="../css/student.css">
+</head>
+<body>
+    <div class="student-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 Student Portal</h2>
+                <p id="studentName">Loading...</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html">📊 Dashboard</a></li>
+                <li><a href="alerts.html">🚨 Alerts</a></li>
+                <li><a href="events.html">📅 Events</a></li>
+                <li><a href="profile.html" class="active">👤 Profile</a></li>
+                <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+            </ul>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>My Profile</h1>
+                <p>Manage your personal information and preferences</p>
+            </header>
+            
+            <!-- Profile Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('personal')">👤 Personal Info</button>
+                <button class="tab-btn" onclick="switchTab('academic')">📚 Academic Info</button>
+                <button class="tab-btn" onclick="switchTab('preferences')">⚙️ Preferences</button>
+            </div>
+            
+            <!-- Personal Information Tab -->
+            <div id="personalTab" class="tab-content active">
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h3>Personal Information</h3>
+                        <button class="btn-primary" onclick="editPersonalInfo()">✏️ Edit</button>
+                    </div>
+                    
+                    <form id="personalForm" class="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fullName">Full Name</label>
+                                <input type="text" id="fullName" name="name" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" readonly placeholder="Not provided">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="dateOfBirth">Date of Birth</label>
+                                <input type="date" id="dateOfBirth" name="dateOfBirth" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <textarea id="address" name="address" rows="3" readonly placeholder="Not provided"></textarea>
+                        </div>
+                        
+                        <div class="form-actions" id="personalActions" style="display: none;">
+                            <button type="button" class="btn-secondary" onclick="cancelEdit('personal')">Cancel</button>
+                            <button type="submit" class="btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Academic Information Tab -->
+            <div id="academicTab" class="tab-content">
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h3>Academic Information</h3>
+                    </div>
+                    
+                    <div class="academic-info">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Student ID:</label>
+                                <span id="studentId">Loading...</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <label>Department:</label>
+                                <span id="department">Loading...</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <label>Year of Study:</label>
+                                <span id="yearOfStudy">3rd Year</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <label>Enrollment Date:</label>
+                                <span id="enrollmentDate">Loading...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="courses-section">
+                            <h4>📚 Enrolled Courses</h4>
+                            <div class="courses-list" id="enrolledCourses">
+                                <div class="loading">Loading enrolled courses...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preferences Tab -->
+            <div id="preferencesTab" class="tab-content">
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h3>Notification Preferences</h3>
+                        <button class="btn-primary" onclick="savePreferences()">💾 Save Preferences</button>
+                    </div>
+                    
+                    <form id="preferencesForm" class="preferences-form">
+                        <div class="preference-section">
+                            <h4>📧 Email Notifications</h4>
+                            <div class="preference-item">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="emailAlerts" checked>
+                                    <span class="checkmark"></span>
+                                    Receive alert notifications via email
+                                </label>
+                            </div>
+                            
+                            <div class="preference-item">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="emailEvents" checked>
+                                    <span class="checkmark"></span>
+                                    Receive event reminders via email
+                                </label>
+                            </div>
+                            
+                            <div class="preference-item">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="emailDigest">
+                                    <span class="checkmark"></span>
+                                    Receive weekly digest emails
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-section">
+                            <h4>🔔 Alert Preferences</h4>
+                            <div class="preference-item">
+                                <label for="alertFrequency">Alert Frequency:</label>
+                                <select id="alertFrequency">
+                                    <option value="immediate">Immediate</option>
+                                    <option value="daily">Daily Summary</option>
+                                    <option value="weekly">Weekly Summary</option>
+                                </select>
+                            </div>
+                            
+                            <div class="preference-item">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="urgentOnly">
+                                    <span class="checkmark"></span>
+                                    Only receive urgent alerts
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-section">
+                            <h4>🎨 Display Preferences</h4>
+                            <div class="preference-item">
+                                <label for="theme">Theme:</label>
+                                <select id="theme">
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="auto">Auto (System)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="preference-item">
+                                <label for="language">Language:</label>
+                                <select id="language">
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Account Security -->
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h3>🔒 Account Security</h3>
+                    </div>
+                    
+                    <div class="security-section">
+                        <div class="security-item">
+                            <div class="security-info">
+                                <h4>Password</h4>
+                                <p>Last changed: 30 days ago</p>
+                            </div>
+                            <button class="btn-secondary" onclick="changePassword()">Change Password</button>
+                        </div>
+                        
+                        <div class="security-item">
+                            <div class="security-info">
+                                <h4>Login Activity</h4>
+                                <p>Last login: Today at 9:30 AM</p>
+                            </div>
+                            <button class="btn-secondary" onclick="viewLoginHistory()">View History</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Change Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔒 Change Password</h3>
+                <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+            </div>
+            
+            <form id="passwordForm" class="modal-form">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" name="newPassword" required>
+                    <small>Password must be at least 8 characters long</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closePasswordModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="../js/student.js"></script>
+    <script>
+        let currentTab = 'personal';
+        let isEditing = false;
+        let originalData = {};
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadProfileData();
+        });
+        
+        async function loadProfileData() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                
+                // Load personal information
+                document.getElementById('fullName').value = user.name;
+                document.getElementById('email').value = user.email;
+                document.getElementById('studentId').textContent = `STU${user.id.toString().padStart(6, '0')}`;
+                document.getElementById('department').textContent = 'Computer Science'; // Placeholder
+                document.getElementById('enrollmentDate').textContent = formatDate(user.created_at);
+                
+                // Load enrolled courses (placeholder data)
+                loadEnrolledCourses();
+                
+            } catch (error) {
+                console.error('Failed to load profile data:', error);
+                showNotification('Failed to load profile data', 'error');
+            }
+        }
+        
+        async function loadEnrolledCourses() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const response = await studentUtils.apiCall(`/users/student/${user.id}/courses`);
+                
+                const coursesList = document.getElementById('enrolledCourses');
+                
+                if (!response.courses || response.courses.length === 0) {
+                    coursesList.innerHTML = '<div class="empty-state">No courses enrolled</div>';
+                    return;
+                }
+                
+                coursesList.innerHTML = response.courses.map(course => `
+                    <div class="course-item">
+                        <div class="course-code">${course.code}</div>
+                        <div class="course-details">
+                            <h5>${course.name}</h5>
+                            <p>${course.department_name} • ${course.lecturer_name || 'No lecturer assigned'}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load enrolled courses:', error);
+                const coursesList = document.getElementById('enrolledCourses');
+                coursesList.innerHTML = '<div class="error-state">Failed to load courses</div>';
+            }
+        }
+        
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tab}Tab`).classList.add('active');
+            
+            currentTab = tab;
+        }
+        
+        function editPersonalInfo() {
+            if (isEditing) return;
+            
+            isEditing = true;
+            
+            // Store original data
+            const form = document.getElementById('personalForm');
+            const formData = new FormData(form);
+            originalData = Object.fromEntries(formData.entries());
+            
+            // Enable form fields
+            const inputs = form.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                if (input.name !== 'email') { // Email should remain readonly
+                    input.removeAttribute('readonly');
+                }
+            });
+            
+            // Show form actions
+            document.getElementById('personalActions').style.display = 'flex';
+            
+            // Update button text
+            const editBtn = document.querySelector('#personalTab .btn-primary');
+            editBtn.textContent = '✏️ Editing...';
+            editBtn.disabled = true;
+        }
+        
+        function cancelEdit(tab) {
+            if (tab === 'personal') {
+                isEditing = false;
+                
+                // Restore original data
+                Object.entries(originalData).forEach(([key, value]) => {
+                    const input = document.querySelector(`[name="${key}"]`);
+                    if (input) input.value = value;
+                });
+                
+                // Disable form fields
+                const form = document.getElementById('personalForm');
+                const inputs = form.querySelectorAll('input, textarea');
+                inputs.forEach(input => input.setAttribute('readonly', true));
+                
+                // Hide form actions
+                document.getElementById('personalActions').style.display = 'none';
+                
+                // Reset button
+                const editBtn = document.querySelector('#personalTab .btn-primary');
+                editBtn.textContent = '✏️ Edit';
+                editBtn.disabled = false;
+            }
+        }
+        
+        function savePreferences() {
+            // In a real app, this would save to the backend
+            showNotification('Preferences saved successfully', 'success');
+        }
+        
+        function changePassword() {
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+        
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('passwordForm').reset();
+        }
+        
+        function viewLoginHistory() {
+            // In a real app, this would show login history
+            showNotification('Login history feature coming soon', 'info');
+        }
+        
+        // Handle personal form submission
+        document.getElementById('personalForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const formData = new FormData(e.target);
+                const userData = Object.fromEntries(formData.entries());
+                
+                // In a real app, this would update via API
+                // await apiCall(`/users/${user.id}`, 'PUT', userData);
+                
+                showNotification('Profile updated successfully', 'success');
+                
+                // Update stored user data
+                const user = JSON.parse(localStorage.getItem('user'));
+                user.name = userData.name;
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                // Update sidebar name
+                document.getElementById('studentName').textContent = userData.name;
+                
+                cancelEdit('personal');
+            } catch (error) {
+                showNotification('Failed to update profile: ' + error.message, 'error');
+            }
+        });
+        
+        // Handle password form submission
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                showNotification('New passwords do not match', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                showNotification('Password must be at least 8 characters long', 'error');
+                return;
+            }
+            
+            try {
+                // In a real app, this would update password via API
+                showNotification('Password updated successfully', 'success');
+                closePasswordModal();
+            } catch (error) {
+                showNotification('Failed to update password: ' + error.message, 'error');
+            }
+        });
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

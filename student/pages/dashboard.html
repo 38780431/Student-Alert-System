@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Student Alert System</title>
+    <link rel="stylesheet" href="../css/student.css">
+</head>
+<body>
+    <div class="student-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 Student Portal</h2>
+                <p id="studentName">Loading...</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="active">📊 Dashboard</a></li>
+                <li><a href="alerts.html">🚨 Alerts</a></li>
+                <li><a href="events.html">📅 Events</a></li>
+                <li><a href="profile.html">👤 Profile</a></li>
+                <li><a href="#" onclick="logout()">🚪 Logout</a></li>
+            </ul>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Welcome Back!</h1>
+               
+            </header>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🚨</div>
+                    <div class="stat-info">
+                        <h3 id="totalAlerts">0</h3>
+                        <p>Total Alerts</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">📩</div>
+                    <div class="stat-info">
+                        <h3 id="unreadAlerts">0</h3>
+                        <p>Unread Alerts</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-info">
+                        <h3 id="upcomingEvents">0</h3>
+                        <p>Upcoming Events</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-info">
+                        <h3 id="enrolledCourses">0</h3>
+                        <p>Enrolled Courses</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>🚨 Recent Alerts</h3>
+                        <a href="alerts.html" class="btn-secondary">View All</a>
+                    </div>
+                    <div class="alerts-list" id="recentAlerts">
+                        <div class="loading">Loading recent alerts...</div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>📅 Upcoming Events</h3>
+                        <button class="btn-secondary" onclick="viewAllEvents()">View All</button>
+                    </div>
+                    <div id="upcomingEventsList" class="events-list">
+                        <div class="loading">Loading events...</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>🔔 Notifications</h3>
+                        <button class="btn-secondary" onclick="markAllNotificationsRead()">Mark All Read</button>
+                    </div>
+                    <div id="notificationsList" class="notifications-list">
+                        <div class="loading">Loading notifications...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h3>⚡ Quick Actions</h3>
+                <div class="actions-grid">
+                    <button class="action-btn" onclick="window.location.href='alerts.html'">
+                        <span class="action-icon">📩</span>
+                        <span>Check Alerts</span>
+                    </button>
+                    
+                    <button class="action-btn" onclick="window.location.href='events.html'">
+                        <span class="action-icon">📅</span>
+                        <span>View Events</span>
+                    </button>
+                    
+                    <button class="action-btn" onclick="window.location.href='profile.html'">
+                        <span class="action-icon">⚙️</span>
+                        <span>Update Profile</span>
+                    </button>
+                    
+                    <button class="action-btn" onclick="markAllAlertsRead()">
+                        <span class="action-icon">✅</span>
+                        <span>Mark All Read</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Academic Calendar Widget -->
+            <div class="calendar-widget">
+                <div class="card-header">
+                    <h3>📆 This Week</h3>
+                </div>
+                <div class="calendar-content" id="weeklyCalendar">
+                    <div class="loading">Loading calendar...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Event Details Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Event Details</h2>
+                <span class="close" onclick="closeEventModal()">&times;</span>
+            </div>
+            <div id="eventDetails" class="event-details">
+                <div class="loading">Loading event details...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/student.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDashboardData();
+        });
+        
+        async function loadDashboardData() {
+            try {
+                // Load alerts
+                const alertsResponse = await apiCall('/alerts/received');
+                const alerts = alertsResponse.alerts || [];
+                
+                // Load events
+                const eventsResponse = await apiCall('/events');
+                const events = eventsResponse.events || [];
+                
+                // Load notifications
+                await loadNotifications();
+                
+                // Update stats
+                await updateStats(alerts, events);
+                
+                // Display recent alerts (last 5)
+                displayRecentAlerts(alerts.slice(0, 5));
+                
+                // Display upcoming events (next 5)
+                const upcomingEvents = events
+                    .filter(event => new Date(event.event_date) >= new Date())
+                    .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+                    .slice(0, 5);
+                
+                displayUpcomingEvents(upcomingEvents);
+                
+                // Load weekly calendar
+                loadWeeklyCalendar(events);
+                
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+                showNotification('Failed to load dashboard data', 'error');
+            }
+        }
+        
+        async function updateStats(alerts, events) {
+            document.getElementById('totalAlerts').textContent = alerts.length;
+            
+            // For demo purposes, assume some alerts are unread
+            const unreadCount = Math.min(alerts.length, Math.floor(alerts.length * 0.3));
+            document.getElementById('unreadAlerts').textContent = unreadCount;
+            
+            // Count upcoming events
+            const upcomingCount = events.filter(event => 
+                new Date(event.event_date) >= new Date()
+            ).length;
+            document.getElementById('upcomingEvents').textContent = upcomingCount;
+            
+            // Get actual enrolled courses count
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const response = await studentUtils.apiCall(`/users/student/${user.id}/courses`);
+                document.getElementById('enrolledCourses').textContent = response.courses ? response.courses.length : 0;
+            } catch (error) {
+                console.error('Failed to fetch enrolled courses:', error);
+                document.getElementById('enrolledCourses').textContent = '0';
+            }
+        }
+        
+        function displayRecentAlerts(alerts) {
+            const alertsList = document.getElementById('recentAlerts');
+            
+            if (alerts.length === 0) {
+                alertsList.innerHTML = '<div class="empty-state">No alerts received yet</div>';
+                return;
+            }
+            
+            alertsList.innerHTML = alerts.map(alert => `
+                <div class="alert-item ${Math.random() > 0.7 ? 'unread' : ''}">
+                    <div class="alert-icon">🚨</div>
+                    <div class="alert-content">
+                        <h4>${alert.subject}</h4>
+                        <p>From: ${alert.sender_name}</p>
+                        <small>${formatDateTime(alert.sent_at)}</small>
+                    </div>
+                    <div class="alert-status">
+                        ${Math.random() > 0.7 ? '<span class="unread-badge">New</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function displayUpcomingEvents(events) {
+            const container = document.getElementById('upcomingEventsList');
+            if (events.length === 0) {
+                container.innerHTML = '<div class="empty-state">No upcoming events</div>';
+                return;
+            }
+
+            container.innerHTML = events.map(event => `
+                <div class="event-card" onclick="showEventDetails('${event.id}')">
+                    <div class="event-date">
+                        <span class="date">${new Date(event.event_date).toLocaleDateString()}</span>
+                        <span class="time">${new Date(event.event_date).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="event-info">
+                        <h4>${event.title}</h4>
+                        <p>${event.description || 'No description available'}</p>
+                        <div class="event-meta">
+                            <span class="event-type">${event.event_type}</span>
+                            ${event.course_name ? `<span class="course-name">${event.course_name}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function loadWeeklyCalendar(events) {
+            const calendarContent = document.getElementById('weeklyCalendar');
+            
+            // Get current week
+            const today = new Date();
+            const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+            
+            const weekDays = [];
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+                weekDays.push(day);
+            }
+            
+            // Filter events for this week
+            const weekEvents = events.filter(event => {
+                const eventDate = new Date(event.event_date);
+                return eventDate >= weekDays[0] && eventDate <= weekDays[6];
+            });
+            
+            calendarContent.innerHTML = `
+                <div class="week-grid">
+                    ${weekDays.map(day => {
+                        const dayEvents = weekEvents.filter(event => 
+                            new Date(event.event_date).toDateString() === day.toDateString()
+                        );
+                        
+                        const isToday = day.toDateString() === new Date().toDateString();
+                        
+                        return `
+                            <div class="day-column ${isToday ? 'today' : ''}">
+                                <div class="day-header">
+                                    <span class="day-name">${day.toLocaleDateString('en', {weekday: 'short'})}</span>
+                                    <span class="day-number">${day.getDate()}</span>
+                                </div>
+                                <div class="day-events">
+                                    ${dayEvents.map(event => `
+                                        <div class="mini-event">
+                                            <span class="event-title">${event.title}</span>
+                                        </div>
+                                    `).join('') || '<div class="no-events">No events</div>'}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        function markAllAlertsRead() {
+            // In a real app, this would make an API call to mark alerts as read
+            showNotification('All alerts marked as read', 'success');
+            
+            // Update unread count
+            document.getElementById('unreadAlerts').textContent = '0';
+            
+            // Remove unread badges
+            document.querySelectorAll('.unread-badge').forEach(badge => badge.remove());
+            document.querySelectorAll('.alert-item.unread').forEach(item => item.classList.remove('unread'));
+        }
+        
+        function formatTime(dateString) {
+            return new Date(dateString).toLocaleTimeString('en', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        async function showEventDetails(eventId) {
+            try {
+                const response = await apiCall(`/events/${eventId}`);
+                const event = response.event;
+
+                const details = document.getElementById('eventDetails');
+                details.innerHTML = `
+                    <div class="event-header">
+                        <h3>${event.title}</h3>
+                        <div class="event-meta">
+                            <span class="event-type">${event.event_type}</span>
+                            ${event.course_name ? `<span class="course-name">${event.course_name}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="event-date-time">
+                        <p><strong>Date:</strong> ${new Date(event.event_date).toLocaleDateString()}</p>
+                        <p><strong>Time:</strong> ${new Date(event.event_date).toLocaleTimeString()}</p>
+                    </div>
+                    <div class="event-description">
+                        <h4>Description</h4>
+                        <p>${event.description || 'No description available'}</p>
+                    </div>
+                    <div class="event-actions">
+                        <button class="btn-primary" onclick="registerForEvent('${event.id}')">Register for Event</button>
+                    </div>
+                `;
+
+                document.getElementById('eventModal').style.display = 'block';
+            } catch (error) {
+                console.error('Failed to load event details:', error);
+                showNotification('Failed to load event details', 'error');
+            }
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModal').style.display = 'none';
+        }
+
+        async function registerForEvent(eventId) {
+            try {
+                await apiCall(`/events/${eventId}/register`, 'POST');
+                showNotification('Successfully registered for event', 'success');
+                closeEventModal();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Failed to register for event:', error);
+                showNotification(error.message || 'Failed to register for event', 'error');
+            }
+        }
+
+        async function loadNotifications() {
+            try {
+                const response = await apiCall('/events/notifications');
+                const notifications = response.notifications || [];
+                
+                const container = document.getElementById('notificationsList');
+                if (notifications.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No notifications</div>';
+                    return;
+                }
+
+                container.innerHTML = notifications.map(notification => `
+                    <div class="notification-item ${notification.read_at ? 'read' : 'unread'}" 
+                         onclick="markNotificationRead('${notification.id}')">
+                        <div class="notification-content">
+                            <p>${notification.message}</p>
+                            <span class="notification-time">${new Date(notification.sent_at).toLocaleString()}</span>
+                        </div>
+                        ${!notification.read_at ? '<span class="unread-indicator"></span>' : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load notifications:', error);
+                showNotification('Failed to load notifications', 'error');
+            }
+        }
+
+        async function markNotificationRead(notificationId) {
+            try {
+                await apiCall(`/events/notifications/${notificationId}/read`, 'PUT');
+                await loadNotifications();
+            } catch (error) {
+                console.error('Failed to mark notification as read:', error);
+                showNotification('Failed to mark notification as read', 'error');
+            }
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                const response = await apiCall('/events/notifications');
+                const notifications = response.notifications || [];
+                
+                for (const notification of notifications) {
+                    if (!notification.read_at) {
+                        await apiCall(`/events/notifications/${notification.id}/read`, 'PUT');
+                    }
+                }
+                
+                await loadNotifications();
+                showNotification('All notifications marked as read', 'success');
+            } catch (error) {
+                console.error('Failed to mark all notifications as read:', error);
+                showNotification('Failed to mark all notifications as read', 'error');
+            }
+        }
+
+        // Add notification styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .notification-item {
+                padding: 12px;
+                border-bottom: 1px solid #e5e7eb;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: background-color 0.2s;
+            }
+
+            .notification-item:hover {
+                background-color: #f9fafb;
+            }
+
+            .notification-item.unread {
+                background-color: #f0f9ff;
+            }
+
+            .notification-content {
+                flex: 1;
+            }
+
+            .notification-content p {
+                margin: 0;
+                color: #111827;
+            }
+
+            .notification-time {
+                font-size: 0.75rem;
+                color: #6b7280;
+            }
+
+            .unread-indicator {
+                width: 8px;
+                height: 8px;
+                background-color: #3b82f6;
+                border-radius: 50%;
+                margin-left: 12px;
+            }
+
+            .event-card {
+                padding: 16px;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+
+            .event-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+
+            .event-date {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+
+            .event-date .date {
+                font-weight: 500;
+                color: #111827;
+            }
+
+            .event-date .time {
+                font-size: 0.875rem;
+                color: #6b7280;
+            }
+
+            .event-info h4 {
+                margin: 0 0 4px 0;
+                color: #111827;
+            }
+
+            .event-info p {
+                margin: 0 0 8px 0;
+                color: #4b5563;
+                font-size: 0.875rem;
+            }
+
+            .event-meta {
+                display: flex;
+                gap: 8px;
+            }
+
+            .event-type, .course-name {
+                font-size: 0.75rem;
+                padding: 2px 8px;
+                border-radius: 9999px;
+                background-color: #f3f4f6;
+                color: #4b5563;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
