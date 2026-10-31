@@ -10,7 +10,7 @@ Technologies Used
 - JavaScript – Application functionality.
 - Node.js – Server-side runtime environment.
 - npm – Package and dependency management.
-- MySQL – Database management (if configured in this project).
+- MySQL – Database management
 
  Project Structure
 - `admin/` – Administrator module.
